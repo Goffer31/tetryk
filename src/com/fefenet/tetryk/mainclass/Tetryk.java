@@ -6,19 +6,22 @@
 package com.fefenet.tetryk.mainclass;
 
 import com.fefenet.tetryk.gui.AppMainFrame;
+import javafx.application.TestCanvas;
 
 /**
  *
  * @author mati
  */
-public class Tetryk {
+public class Tetryk extends TestCanvas{
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        new AppMainFrame().setVisible(true);
+        AppMainFrame frame = new AppMainFrame();
+        frame.setVisible(true);
+        frame.test();
     }
     
 }
