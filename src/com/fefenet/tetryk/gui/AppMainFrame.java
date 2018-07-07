@@ -5,7 +5,7 @@
  */
 package com.fefenet.tetryk.gui;
 
-import javafx.application.TestCanvas;
+import com.fefenet.tetryk.mainclass.TestCanvas;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;

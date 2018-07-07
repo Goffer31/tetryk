@@ -1,4 +1,4 @@
-package javafx.application;
+package com.fefenet.tetryk.mainclass;
 
 
 import java.awt.Color;
@@ -50,7 +50,7 @@ public class TestCanvas extends JPanel implements KeyListener{
         else if(e.getKeyCode() == 39 && keyLock == false)
             activeGroup.moveGroup(1);
         repaint();
-        keyLock = false; //blokada, tymczasowo zdjęta
+        keyLock = true; //blokada, tymczasowo zdjęta
         //37 = lewo
         //39 = prawo
         //System.out.println(e.getKeyChar() + " " + e.getKeyCode());
