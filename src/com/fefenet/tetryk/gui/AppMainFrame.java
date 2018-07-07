@@ -34,10 +34,7 @@ public class AppMainFrame extends javax.swing.JFrame {
         JFrame frame = new JFrame("Gra");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(new TestCanvas());
-        //this.add(new TestCanvas());
         System.out.println("Test");
-        //this.pack();
-        //this.setVisible(true);
         frame.setSize(800, 500);
         frame.setVisible(true);
     }

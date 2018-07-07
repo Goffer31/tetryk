@@ -3,6 +3,8 @@ package javafx.application;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -19,11 +21,11 @@ import javax.swing.JPanel;
  *
  * @author mati
  */
-public class TestCanvas extends JPanel {
-    private BlockGroup activeGroup;
+public class TestCanvas extends JPanel implements KeyListener{
+    private final BlockGroup activeGroup;
     private Graphics graphics;
-    private TestCanvas testCanvas;
-    
+    private final TestCanvas testCanvas;
+    private boolean keyLock = false;
     public TestCanvas()
     {
         activeGroup = new BlockGroup();
@@ -34,7 +36,29 @@ public class TestCanvas extends JPanel {
         testCanvas = this;
         Timer timer = new Timer();
         UpdateTask timerTask = new UpdateTask().setReference(activeGroup);
-        timer.schedule(timerTask, 200, 200);    
+        timer.schedule(timerTask, 200, 500);    
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if(e.getKeyCode() == 37 && keyLock == false)
+            activeGroup.moveGroup(-1);
+        else if(e.getKeyCode() == 39 && keyLock == false)
+            activeGroup.moveGroup(1);
+        repaint();
+        keyLock = false; //blokada, tymczasowo zdjęta
+        //37 = lewo
+        //39 = prawo
+        //System.out.println(e.getKeyChar() + " " + e.getKeyCode());
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        keyLock = false;
     }
     
     public class UpdateTask extends TimerTask{
@@ -66,9 +90,50 @@ public class TestCanvas extends JPanel {
                 g.fillRect(x, y, width, height);
         }
         
-        public void move(int step)
+        public void moveDown(int step)
         {
             this.y = this.y + step;
+        }
+        
+        public void moveLeft(int step)
+        {
+            this.x = this.x - step;
+        }
+        
+        public void moveRight(int step)
+        {
+            this.x = this.x + step;
+        }
+    }
+    
+    
+    public class FieldGroup{
+        private final List<Field> fieldList;
+        
+        public FieldGroup()
+        {
+            fieldList = new ArrayList<>();
+        }
+        
+        public class Field{
+            protected boolean isFilled = false;
+            protected boolean isWall = false;
+            protected int x;
+            protected int y;
+        }
+        
+        public Field lookForField(int x, int y)
+        {
+            Field elem;
+            for(int i = 0; i < fieldList.size(); i++)
+            {
+                elem = fieldList.get(i);
+                if(elem.x == x && elem.y == y)
+                {
+                    return elem;
+                }
+            }
+            return null;
         }
     }
     
@@ -105,10 +170,25 @@ public class TestCanvas extends JPanel {
         {
             for(int i = 0; i < group.size(); i++)
             {
-                group.get(i).move(defaultStep);
+                group.get(i).moveDown(defaultStep);
             }
 
             testCanvas.repaint();
+        }
+        
+        public void moveGroup(int direction) // -1 = left, 1 = right
+        {
+            for(int i = 0; i < group.size(); i++)
+            {
+                if(direction == -1)
+                {
+                    group.get(i).moveLeft(defaultStep);
+                }
+                else if(direction == 1)
+                {
+                    group.get(i).moveRight(defaultStep);
+                }
+            }
         }
     }
     
@@ -116,14 +196,11 @@ public class TestCanvas extends JPanel {
     public void paintComponent(Graphics g) {
         int width = getWidth();
         int height = getHeight();
-        //System.out.println(width + " " + height);
         graphics = g;
         g.setColor(Color.white);
         g.fillRect(0, 0, width, height);
         g.setColor(Color.black);
         activeGroup.drawGroup(g);
-        //g.setColor(Color.BLACK);
-        //g.fillRect(50, 50, 10, 10);
       }
 
 }

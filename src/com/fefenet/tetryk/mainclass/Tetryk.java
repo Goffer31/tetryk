@@ -7,6 +7,7 @@ package com.fefenet.tetryk.mainclass;
 
 import com.fefenet.tetryk.gui.AppMainFrame;
 import javafx.application.TestCanvas;
+import javax.swing.JFrame;
 
 /**
  *
@@ -19,9 +20,14 @@ public class Tetryk extends TestCanvas{
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        AppMainFrame frame = new AppMainFrame();
+        JFrame frame = new JFrame("Gra");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        TestCanvas kanwa = new TestCanvas();
+        frame.add(kanwa);
+        System.out.println("Test");
+        frame.setSize(800, 500);
         frame.setVisible(true);
-        frame.test();
+        frame.addKeyListener(kanwa);
     }
     
 }
