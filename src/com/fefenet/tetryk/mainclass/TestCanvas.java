@@ -25,6 +25,7 @@ public class TestCanvas extends JPanel implements KeyListener{
     private final BlockGroup activeGroup;
     private Graphics graphics;
     private final TestCanvas testCanvas;
+    private final FieldGroup fields;
     private boolean keyLock = false;
     public TestCanvas()
     {
@@ -34,6 +35,8 @@ public class TestCanvas extends JPanel implements KeyListener{
         activeGroup.addElement(20, 20);
         activeGroup.addElement(30, 10);
         testCanvas = this;
+        fields = new FieldGroup();
+        fields.initializeWall();
         Timer timer = new Timer();
         UpdateTask timerTask = new UpdateTask().setReference(activeGroup);
         timer.schedule(timerTask, 200, 500);    
@@ -60,7 +63,7 @@ public class TestCanvas extends JPanel implements KeyListener{
     public void keyReleased(KeyEvent e) {
         keyLock = false;
     }
-    
+        
     public class UpdateTask extends TimerTask{
         private BlockGroup groupReference;
         
@@ -86,6 +89,7 @@ public class TestCanvas extends JPanel implements KeyListener{
         
         public void draw(Graphics g)
         {
+            g.setColor(Color.black);
             if(g != null)
                 g.fillRect(x, y, width, height);
         }
@@ -110,6 +114,25 @@ public class TestCanvas extends JPanel implements KeyListener{
     public class FieldGroup{
         private final List<Field> fieldList;
         
+        public void drawWalls()
+        {
+            for(int i = 0; i < fieldList.size(); i++)
+            {
+                graphics.setColor(Color.red);
+                graphics.drawRect(fieldList.get(i).x*10, fieldList.get(i).y*10, 10, 10);
+            }
+            repaint();
+        }
+        
+        public void initializeWall()
+        {
+            for(int i = 0; i < 20; i++)
+            {
+                fieldList.add(new Field(0,i).setIsWall(true));
+                fieldList.add(new Field(11,i).setIsWall(true));
+            }
+        }
+        
         public FieldGroup()
         {
             fieldList = new ArrayList<>();
@@ -120,6 +143,18 @@ public class TestCanvas extends JPanel implements KeyListener{
             protected boolean isWall = false;
             protected int x;
             protected int y;
+            
+            public Field(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+            }
+            
+            public Field setIsWall(boolean wall)
+            {
+                isWall = wall;
+                return this;
+            }
         }
         
         public Field lookForField(int x, int y)
@@ -200,7 +235,9 @@ public class TestCanvas extends JPanel implements KeyListener{
         g.setColor(Color.white);
         g.fillRect(0, 0, width, height);
         g.setColor(Color.black);
+        fields.drawWalls();
         activeGroup.drawGroup(g);
+        
       }
 
 }
