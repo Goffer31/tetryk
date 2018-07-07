@@ -1,6 +1,7 @@
 package com.fefenet.tetryk.mainclass;
 
 
+import com.fefenet.tetryk.mainclass.TestCanvas.FieldGroup.Field;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
@@ -30,10 +31,10 @@ public class TestCanvas extends JPanel implements KeyListener{
     public TestCanvas()
     {
         activeGroup = new BlockGroup();
-        activeGroup.addElement(10, 10);
-        activeGroup.addElement(20, 10);
-        activeGroup.addElement(20, 20);
-        activeGroup.addElement(30, 10);
+        activeGroup.addElement(1, 1);
+        activeGroup.addElement(2, 1);
+        activeGroup.addElement(2, 2);
+        activeGroup.addElement(3, 1);
         testCanvas = this;
         fields = new FieldGroup();
         fields.initializeWall();
@@ -53,7 +54,7 @@ public class TestCanvas extends JPanel implements KeyListener{
         else if(e.getKeyCode() == 39 && keyLock == false)
             activeGroup.moveGroup(1);
         repaint();
-        keyLock = true; //blokada, tymczasowo zdjęta
+        keyLock = false; //blokada, tymczasowo zdjęta
         //37 = lewo
         //39 = prawo
         //System.out.println(e.getKeyChar() + " " + e.getKeyCode());
@@ -91,22 +92,33 @@ public class TestCanvas extends JPanel implements KeyListener{
         {
             g.setColor(Color.black);
             if(g != null)
-                g.fillRect(x, y, width, height);
+                g.fillRect(x*10, y*10, width, height);
         }
         
-        public void moveDown(int step)
+        public boolean checkIfMovePossible(int where)
         {
-            this.y = this.y + step;
+            Field pole = fields.lookForField(this.x+where, this.y);
+            if(pole != null)
+            {
+                if(pole.isWall == false)
+                    return true;
+            }
+            return false;
         }
         
-        public void moveLeft(int step)
+        public void moveDown()
         {
-            this.x = this.x - step;
+            this.y++;
         }
         
-        public void moveRight(int step)
+        public void moveLeft()
         {
-            this.x = this.x + step;
+            this.x--;
+        }
+        
+        public void moveRight()
+        {
+            this.x++;
         }
     }
     
@@ -118,7 +130,10 @@ public class TestCanvas extends JPanel implements KeyListener{
         {
             for(int i = 0; i < fieldList.size(); i++)
             {
-                graphics.setColor(Color.red);
+                if(fieldList.get(i).isWall)
+                    graphics.setColor(Color.red);
+                else
+                    graphics.setColor(Color.CYAN);
                 graphics.drawRect(fieldList.get(i).x*10, fieldList.get(i).y*10, 10, 10);
             }
             repaint();
@@ -130,6 +145,11 @@ public class TestCanvas extends JPanel implements KeyListener{
             {
                 fieldList.add(new Field(0,i).setIsWall(true));
                 fieldList.add(new Field(11,i).setIsWall(true));
+            }
+            for(int i = 1; i < 11; i++)
+            {
+                for(int j = 0; j < 20; j++)
+                    fieldList.add(new Field(i,j).setIsWall(false).setIsFilled(false));
             }
         }
         
@@ -148,6 +168,13 @@ public class TestCanvas extends JPanel implements KeyListener{
             {
                 this.x = x;
                 this.y = y;
+            }
+            
+            public Field setIsFilled(boolean filled)
+            {
+                isFilled = filled;
+                isWall = false;
+                return this;
             }
             
             public Field setIsWall(boolean wall)
@@ -205,7 +232,7 @@ public class TestCanvas extends JPanel implements KeyListener{
         {
             for(int i = 0; i < group.size(); i++)
             {
-                group.get(i).moveDown(defaultStep);
+                group.get(i).moveDown();
             }
 
             testCanvas.repaint();
@@ -213,15 +240,23 @@ public class TestCanvas extends JPanel implements KeyListener{
         
         public void moveGroup(int direction) // -1 = left, 1 = right
         {
+            boolean isMovePossible = true;
             for(int i = 0; i < group.size(); i++)
             {
-                if(direction == -1)
+                isMovePossible = isMovePossible && group.get(i).checkIfMovePossible(direction);
+            }
+            for(int i = 0 ; i < group.size(); i++)
+            {
+                if(isMovePossible)
                 {
-                    group.get(i).moveLeft(defaultStep);
-                }
-                else if(direction == 1)
-                {
-                    group.get(i).moveRight(defaultStep);
+                    if(direction == -1)
+                    {
+                        group.get(i).moveLeft();
+                    }
+                    else if(direction == 1)
+                    {
+                        group.get(i).moveRight();
+                    }
                 }
             }
         }
