@@ -8,6 +8,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.JPanel;
@@ -23,24 +24,149 @@ import javax.swing.JPanel;
  * @author mati
  */
 public class TestCanvas extends JPanel implements KeyListener{
-    private final BlockGroup activeGroup;
+    private BlockGroup activeGroup;
     private Graphics graphics;
     private final TestCanvas testCanvas;
     private final FieldGroup fields;
     private boolean keyLock = false;
+    boolean isPaused = false;
+    Timer timer;
+    UpdateTask timerTask;
+    
+    public interface Klocek{
+        public void rotate();
+        public void generate();
+    }
+    
+    public class Kluska extends BlockGroup{
+
+        public Kluska()
+        {
+            super();
+        }
+        
+        @Override
+        public void rotate() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void generate() {
+            addElement(1+5,2);
+            addElement(2+5,2);
+            addElement(1+5,3);
+            addElement(2+5,3);
+        }
+        
+    }
+    
+    public class Kijek extends BlockGroup{
+        
+        public Kijek()
+        {
+            super();
+        }
+         @Override
+        public void generate() {
+            addElement(1+5,0);
+            addElement(1+5,1);
+            addElement(1+5,2);
+            addElement(1+5,3);
+        }
+    }
+   
+    public class Elka extends BlockGroup{
+             public Elka()
+        {
+            super();
+        }
+         @Override
+        public void generate() {
+            addElement(1+5,2);
+            addElement(2+5,2);
+            addElement(3+5,2);
+            addElement(1+5,3);
+        }   
+    }
+   
+     public class Zygzak extends BlockGroup{
+         public Zygzak()
+         {
+         super();
+         }
+        
+        @Override
+        public void generate() {
+            addElement(1 + 5, 2);
+            addElement(2 + 5, 2);
+            addElement(2 + 5, 3);
+            addElement(3 + 5, 3);
+        }
+    }
+     
+     
+      public class Piramidka extends BlockGroup{
+          public Piramidka()
+          {
+          super();
+          }
+        @Override
+        public void generate() {
+            addElement(1 + 5, 1);
+            addElement(1 + 5, 2);
+            addElement(1 + 5, 3);
+            addElement(2 + 5, 2);
+        }
+
+    }
+
+    public class OdwroconaElka extends BlockGroup {
+
+        public OdwroconaElka() {
+            super();
+        }
+
+        @Override
+        public void generate() {
+            addElement(1 + 5, 2);
+            addElement(1 + 5, 3);
+            addElement(2 + 5, 3);
+            addElement(3 + 5, 3);
+        }
+    }
+
+    /*
+   
+    
+    public class RotatorLibrary{
+        kluska, kijek, elka, odwrocona_elka, piramidka, zygzak
+    }*/
+
+    
     public TestCanvas()
     {
-        activeGroup = new BlockGroup();
-        activeGroup.addElement(1, 1);
-        activeGroup.addElement(2, 1);
-        activeGroup.addElement(2, 2);
-        activeGroup.addElement(3, 1);
+        Random losowanieKlocka = new Random();
+        int losowa = losowanieKlocka.nextInt(6);
+        if(losowa == 0)
+            activeGroup = new Kluska();
+        else if (losowa == 1) {
+            activeGroup = new Kijek();
+        } else if (losowa == 2) {
+            activeGroup = new Elka();
+        } else if (losowa == 3) {
+            activeGroup = new Zygzak();
+        } else if (losowa == 4) {
+            activeGroup = new Piramidka();
+        } else if (losowa == 5) {
+            activeGroup = new OdwroconaElka();
+        }
+        activeGroup.generate();
         testCanvas = this;
         fields = new FieldGroup();
         fields.initializeWall();
-        Timer timer = new Timer();
-        UpdateTask timerTask = new UpdateTask().setReference(activeGroup);
-        timer.schedule(timerTask, 200, 500);    
+        timer = new Timer();
+        timerTask = new UpdateTask().setReference(activeGroup);
+        timer.schedule(timerTask, 200, 500);
     }
 
     @Override
@@ -53,8 +179,13 @@ public class TestCanvas extends JPanel implements KeyListener{
             activeGroup.moveGroup(-1);
         else if(e.getKeyCode() == 39 && keyLock == false)
             activeGroup.moveGroup(1);
+        if(e.getKeyCode() == 80 && keyLock == false) 
+        {
+        if(isPaused == false ){timer.cancel();isPaused=true;}
+        else if(isPaused == true){timer= new Timer(); timerTask = new UpdateTask().setReference(activeGroup); timer.schedule(timerTask, 200, 500); isPaused = false;}
+        }
         repaint();
-        keyLock = false; //blokada, tymczasowo zdjęta
+        keyLock = true; //blokada, tymczasowo zdjęta
         //37 = lewo
         //39 = prawo
         //System.out.println(e.getKeyChar() + " " + e.getKeyCode());
@@ -95,9 +226,9 @@ public class TestCanvas extends JPanel implements KeyListener{
                 g.fillRect(x*10, y*10, width, height);
         }
         
-        public boolean checkIfMovePossible(int where)
+        public boolean checkIfMovePossible(int whereX, int whereY)
         {
-            Field pole = fields.lookForField(this.x+where, this.y);
+            Field pole = fields.lookForField(this.x+whereX, this.y+whereY);
             if(pole != null)
             {
                 if(pole.isWall == false)
@@ -141,13 +272,14 @@ public class TestCanvas extends JPanel implements KeyListener{
         
         public void initializeWall()
         {
-            for(int i = 0; i < 20; i++)
+            for(int i = 0; i < 21; i++)
             {
                 fieldList.add(new Field(0,i).setIsWall(true));
                 fieldList.add(new Field(11,i).setIsWall(true));
             }
             for(int i = 1; i < 11; i++)
             {
+                fieldList.add(new Field(i,20).setIsWall(true));
                 for(int j = 0; j < 20; j++)
                     fieldList.add(new Field(i,j).setIsWall(false).setIsFilled(false));
             }
@@ -199,11 +331,11 @@ public class TestCanvas extends JPanel implements KeyListener{
         }
     }
     
-    public class BlockGroup{
-        List<Block> group;
-        int defaultWidth = 10;
-        int defaultHeight = 10;
-        int defaultStep = 10;
+    public class BlockGroup implements Klocek{
+        protected List<Block> group;
+        protected int defaultWidth = 10;
+        protected int defaultHeight = 10;
+        protected int defaultStep = 10;
         
         public BlockGroup()
         {
@@ -230,10 +362,14 @@ public class TestCanvas extends JPanel implements KeyListener{
         
         public void updateBlocks()
         {
-            for(int i = 0; i < group.size(); i++)
-            {
-                group.get(i).moveDown();
+            boolean isMovePossible = true;
+            for (int i = 0; i < group.size(); i++) {
+                isMovePossible = isMovePossible && group.get(i).checkIfMovePossible(0, 1);
             }
+            if(isMovePossible) 
+                for (int i = 0; i < group.size(); i++) {
+                    group.get(i).moveDown();
+                }
 
             testCanvas.repaint();
         }
@@ -243,7 +379,7 @@ public class TestCanvas extends JPanel implements KeyListener{
             boolean isMovePossible = true;
             for(int i = 0; i < group.size(); i++)
             {
-                isMovePossible = isMovePossible && group.get(i).checkIfMovePossible(direction);
+                isMovePossible = isMovePossible && group.get(i).checkIfMovePossible(direction,0);
             }
             for(int i = 0 ; i < group.size(); i++)
             {
@@ -259,6 +395,16 @@ public class TestCanvas extends JPanel implements KeyListener{
                     }
                 }
             }
+        }
+
+        @Override
+        public void rotate() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void generate() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
     
